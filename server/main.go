@@ -14,6 +14,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer stor.Close()
 	r := gin.Default()
 	r.GET("/login/header", func(c *gin.Context) {
 		userId := c.Query("user_id")
@@ -24,5 +25,4 @@ func main() {
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		log.Fatal(err)
 	}
-	stor.Close()
 }

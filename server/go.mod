@@ -1,4 +1,4 @@
-module github.com/soarqin/dsp-milkyway
+module github.com/soarqin/dsp-milkyway/server
 
 go 1.20
 
