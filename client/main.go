@@ -41,7 +41,7 @@ func main() {
 		fmt.Printf("Full-data %v is up-to-date\n", fullUrl)
 	}
 	fmt.Printf("Parsing %v into tables...\n", fullUrl)
-	parseFullData(fullUrl)
+	_ = parseFullData(fullUrl)
 }
 
 func fileExists(path string) bool {
@@ -139,7 +139,7 @@ func loadTopTenPlayerData(reader io.Reader) error {
 	}()
 	w := csv.NewWriter(of)
 	defer w.Flush()
-	if err = w.Write([]string{"种子", "星数", "资源倍率", "用户ID", "平台", "账号", "发电量", "匿名"}); err != nil {
+	if err = w.Write([]string{"种子", "星数", "资源倍率", "战斗难度", "用户ID", "平台", "账号", "发电量", "匿名"}); err != nil {
 		return err
 	}
 	for i := int32(0); i < num; i++ {
@@ -172,7 +172,7 @@ func loadTopTenPlayerData(reader io.Reader) error {
 		if err := binary.Read(reader, binary.LittleEndian, &isAnon); err != nil {
 			return err
 		}
-		if err = w.Write([]string{fmt.Sprint(seedKey / 100000000), fmt.Sprint((seedKey / 100000) % 1000), resourceMultiplier((seedKey / 1000) % 100), fmt.Sprint(userId), platformName(platform), name, fmt.Sprint(genCap * 60), fmt.Sprint(isAnon > 0)}); err != nil {
+		if err = w.Write([]string{fmt.Sprint(seedKey / 100000000), fmt.Sprint((seedKey / 100000) % 1000), resourceMultiplier((seedKey / 1000) % 100), combatModeDifficultyNumber(seedKey % 1000), fmt.Sprint(userId), platformName(platform), name, fmt.Sprint(genCap * 60), fmt.Sprint(isAnon > 0)}); err != nil {
 			return err
 		}
 	}
@@ -224,7 +224,7 @@ func loadOtherData(reader io.Reader) error {
 		}()
 		w := csv.NewWriter(of)
 		defer w.Flush()
-		if err = w.Write([]string{"种子", "星数", "资源倍率", "用户数", "总发电量"}); err != nil {
+		if err = w.Write([]string{"种子", "星数", "资源倍率", "战斗难度", "用户数", "总发电量"}); err != nil {
 			return err
 		}
 		var num int32
@@ -244,7 +244,7 @@ func loadOtherData(reader io.Reader) error {
 			if err := binary.Read(reader, binary.LittleEndian, &playerNum); err != nil {
 				return err
 			}
-			if err = w.Write([]string{fmt.Sprint(seedKey / 100000000), fmt.Sprint((seedKey / 100000) % 1000), resourceMultiplier((seedKey / 1000) % 100), fmt.Sprint(playerNum), fmt.Sprint(int64(genCap * 60))}); err != nil {
+			if err = w.Write([]string{fmt.Sprint(seedKey / 100000000), fmt.Sprint((seedKey / 100000) % 1000), resourceMultiplier((seedKey / 1000) % 100), combatModeDifficultyNumber(seedKey % 1000), fmt.Sprint(playerNum), fmt.Sprint(int64(genCap * 60))}); err != nil {
 				return err
 			}
 			if err = binary.Read(reader, binary.LittleEndian, &v32); err != nil {
@@ -273,6 +273,13 @@ func resourceMultiplier(n int64) string {
 		return "无限"
 	}
 	return strconv.FormatFloat(float64(n)/10.0, 'f', 1, 64)
+}
+
+func combatModeDifficultyNumber(n int64) string {
+	if n/100 == 0 {
+		return "和平模式"
+	}
+	return fmt.Sprint(n % 100)
 }
 
 func read7BitEncodedInt(reader io.Reader) (int32, error) {
